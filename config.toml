@@ -1,0 +1,11 @@
+[model]
+
+
+[train]
+  batch_size = 32
+  num_workers = 0
+  epochs = 10
+  save_dir = './runs'
+
+[data]
+  data_path = './data'

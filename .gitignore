@@ -1,0 +1,26 @@
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 数据
+data/
+*.csv
+*.pth
+
+# 编辑器
+.vscode/
+.idea/
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 日志和输出
+runs/
+logs/
+*.log
+
+# 其他
+main.ipynb
