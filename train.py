@@ -20,26 +20,31 @@ def train_step(model, data_loader, loss_fn, optimizer: torch.optim.Optimizer):
         train_acc
     """
     model.train()
-    train_acc, train_loss = 0, 0
-    for batch, (x, y) in enumerate(data_loader):
+
+    total_loss, total_correct, total_samples = 0.0, 0,  0
+
+    progress = tqdm(data_loader, desc='train', dynamic_ncols=True)
+    for batch, (x, y) in enumerate(progress):
         x, y = x.to(device), y.to(device)
         
         pred = model(x)
 
         loss = loss_fn(pred, y)
-        train_loss += loss
+
+        batch_size = y.size(0)
+        total_loss += loss.item() * batch_size
+        total_correct += (pred.argmax(dim=1) == y).sum().item()
+        total_samples += batch_size
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        logit = torch.argmax(torch.softmax(pred, dim=1), dim=1)
-        train_acc += (y == logit).sum().item() / len(pred)
 
-    train_loss /= len(data_loader)
-    train_acc /= len(data_loader)
+    train_epoch_loss = total_loss / total_samples
+    train_epoch_acc = total_correct / total_samples
 
-    return  train_loss, train_acc
+    return  train_epoch_loss, train_epoch_acc
 
 
 def test_step(model, data_loader, loss_fn):
@@ -51,21 +56,24 @@ def test_step(model, data_loader, loss_fn):
         train_acc
     """
     model.eval()
-    test_acc, test_loss = 0, 0
+    total_loss, total_correct, total_samples = 0.0, 0,  0
+    progress = tqdm(data_loader, desc='test', dynamic_ncols=True)
     with torch.inference_mode():
-        for batch, (x, y) in enumerate(data_loader):
+        for batch, (x, y) in enumerate(progress):
             x, y = x.to(device), y.to(device)
             pred = model(x)
             loss = loss_fn(pred, y)
-            test_loss += loss
-        
-            test_logit = torch.argmax(pred, dim=1)
-            test_acc += (y == test_logit).sum().item() / len(pred)
 
-    test_loss = test_loss / len(data_loader)
-    test_acc = test_acc / len(data_loader)
+            batch_size = y.size(0)
+            total_loss += loss.item() * batch_size
+            total_samples += batch_size
+        
+            total_correct += (y == pred.argmax(dim=1)).sum().item()
+
+    test_epoch_loss = total_loss / total_samples
+    test_epoch_acc = total_correct / total_samples
     
-    return  test_loss, test_acc
+    return  test_epoch_loss, test_epoch_acc
 
     
 @timer
@@ -88,13 +96,14 @@ def train(model : nn.Module,
 
     os.makedirs(save_dir, exist_ok=True)
 
-    for epoch in tqdm(range(epochs)):
+    for epoch in range(epochs):
+        print(f'\nEpoch: {epoch+1}/{epochs}',)
 
         train_loss, train_acc= train_step(model, train_loader, loss_fn, optimizer)
         test_loss, test_acc = test_step(model, test_loader, loss_fn)
 
         print(
-             f'\nEpoch: {epoch:.4f}',
+             
              f'train_acc: {train_acc:.4f}',
              f'train_loss: {train_loss:.4f}',
              f'test_acc: {test_acc:.4f}',
@@ -108,6 +117,7 @@ def train(model : nn.Module,
 
         
         if best_acc < test_acc:
+            best_acc = test_acc
             torch.save(model.state_dict(), save_dir+'/best.pt')
     
     return results

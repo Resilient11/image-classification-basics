@@ -2,7 +2,7 @@
 import os
 from utils import timer
 from torchvision import datasets, transforms
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 
 
 @timer
