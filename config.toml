@@ -8,4 +8,5 @@
   save_dir = './runs'
 
 [data]
-  data_path = './data'
+  data_path_custom = "./data/pizza_steak_sushi"
+  data_path = "./data"
