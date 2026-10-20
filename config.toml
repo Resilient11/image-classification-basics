@@ -1,12 +1,33 @@
+# 手写模型需要与 ViT-B/16 的预训练主干结构保持一致。
 [model]
-
+img_size = 224
+in_channel = 3
+patch_size = 16
+embedding_dim = 768
+mlp_size = 3072
+mlp_dropout = 0.1
+attn_dropout = 0.0
+num_transformer_layers = 12
+num_head = 12
+embedding_dropout = 0.1
 
 [train]
-  batch_size = 32
-  num_workers = 0
-  epochs = 10
-  save_dir = './runs'
+batch_size = 32
+num_workers = 0
+epochs = 10
+learning_rate = 0.001
+seed = 42
+device = "auto"
+# true 表示冻结预训练主干，只训练新的分类头；false 表示微调整个模型。
+freeze_backbone = true
+# 与 Notebook 的两个教学实验分开保存，避免不同结构的权重相互覆盖。
+save_dir = "./runs/handwritten_pretrained_vit"
 
 [data]
-  data_path_custom = "./data/pizza_steak_sushi"
-  data_path = "./data"
+data_path = "./data"
+dataset_name = "pizza_steak_sushi"
+source = "https://github.com/mrdbourke/pytorch-deep-learning/raw/main/data/pizza_steak_sushi.zip"
+
+[test]
+image_path = "./data/pizza_steak_sushi/04-pizza-dad.jpeg"
+image_url = "https://raw.githubusercontent.com/mrdbourke/pytorch-deep-learning/main/images/04-pizza-dad.jpeg"

@@ -22,5 +22,5 @@ runs/
 logs/
 *.log
 
-# 其他
-main.ipynb
+# Jupyter 临时文件
+.ipynb_checkpoints/
